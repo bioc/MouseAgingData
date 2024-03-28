@@ -64,7 +64,7 @@
 parabiosis10x <- function (metadata = FALSE)
 {
     eh <- ExperimentHub::ExperimentHub()
-    title <- "Parabiosis10X"
+    title <- "Parabiosis10x"
     
     eh <- AnnotationHub::query(eh, title)
     ehid <- eh$ah_id

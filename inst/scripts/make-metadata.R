@@ -5,7 +5,7 @@
 
 # Parabiosis10x
 Parabiosis10x <- data.frame(
-    Title = "Parabiosis10X",
+    Title = "Parabiosis10x",
     Description = paste0("10x Genomics processed single-cell dataset ",
                          "from Ximerakis & Holton et al. 2023"),
     BiocVersion = "3.19",
