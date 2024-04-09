@@ -45,9 +45,9 @@ knitr::opts_chunk$set(
 Install the package using Bioconductor. Start R and enter:
 
 ```{r, eval = FALSE}
-# if(!requireNamespace("BiocManager", quietly = TRUE))
-    # install.packages("BiocManager")
-# BiocManager::install("MouseAgingData")
+if(!requireNamespace("BiocManager", quietly = TRUE))
+        install.packages("BiocManager")
+BiocManager::install("MouseAgingData")
 ```
 
 # Setup
@@ -108,14 +108,8 @@ The parabiosis single cell RNA-seq (Ximerakis, Holton et al Nature Aging 2023)
 includes 105,329 cells, 31 cell types across 8 OX, 8 YX, 7 YY, 9 YO, 7 OO, 11 OY
 animals, and 20905 features.
 
-This vignette performs a simple analysis of the parabiosis 10x Genomics
-single-cell data set, following the Quick Start Workflow of Single-Cell Analysis
-in the [OSCA Bioconductor Book](https://bioconductor.org/books/3.15/OSCA.intro/analysis-overview.html#quick-start-simple). 
-
-Briefly, it walks through the process of quality control, normalization, various
-forms of dimensionality reduction, clustering, detection of marker genes, and
-annotation of cell types. PCA, UMAP, and tSNE coordinates used in the study were
-provided by the authors for visualization.
+This vignette demonstrates how to access and visualize the droplet data using 
+reduced dimensionality coordinates provided by the authors.
 
 
 # Load the data set from ExperimentHub
@@ -124,131 +118,31 @@ provided by the authors for visualization.
 sce <- parabiosis10x()
 ```
 
+View the `SingleCellExperiment` data.
+
 ```{r}
-# View the data
 sce
 ```
 
 Do some checking to make sure the data loaded correctly and is what we expected.
+Here, we are viewing the cell information of the object. We see that there are 
+indeed 105329 cells and 20905 features.
 
 ```{r, Data check}
-# Sample metadata
 head(colData(sce)) 
-```
-
-
-```{r}
-# Includes cell colors from the original paper
-metadata(sce)
-```
-
-
-# Quality control
-
-In this step, we can explore and visualize mitochondrial content and read count.
-However, the authors have already removed low-quality cells and animals so we
-will skip this section in this vignette. For more details on their workflow, one
-can refer to the original article Ximerakis & Holton et al.
-([2023](https://www.nature.com/articles/s43587-023-00373-6)). The [OSCA
-Bioconductor
-book](https://bioconductor.org/books/3.15/OSCA.basic/quality-control.html) also
-provides several examples of quality control steps as well.
-
-
-# Normalization
-
-Normalize the expression counts. For the purposes of demonstration, we'll subset
-this `SingleCellExperiment` object down to the first 1000 cells.
-
-```{r, subset sce}
-sce_subset <- sce[, 1:1000]
-```
-
-```{r, normalize}
-set.seed(101000110)
-clusters <- quickCluster(sce_subset)
-sce_subset <- computeSumFactors(sce_subset, clusters=clusters)
-sce_subset <- logNormCounts(sce_subset)
-
-logcounts(sce_subset)[1:10, 1:10]
-```
-
-# Feature selection
-
-At this point in a typical workflow, we could select an appropriate set of
-highly variable genes (HVGs), say the top 10% of genes with the highest
-variability in expression. Below is an example of how to do this with our
-subsetted `SingleCellExperiment` example.
-
-```{r, feat select}
-dec <- modelGeneVar(sce_subset)
-hvg <- getTopHVGs(dec, prop=0.1)
-```
-
-<br>
-
-However, a logical index showing the 2000 HVG included in the original study
-conducted by the authors can also be accessed in the original
-`SingleCellExperiment` object in the `rowData()` slot.
-
-```{r}
-head(rowData(sce))
-```
-
-
-# PCA
-
-Below is a method for running a Principal Components Analysis using our
-previously defined HVGs. Since this step can take a significant amount of time
-to compute, we will again just apply it to our subset of 1000 cells as
-demonstration.
-
-```{r, PCA, warning=FALSE}
-# Since we already have PCA coords from our authors, we will add these computed 
-# PCA coords under a different name "osca_PCA"
-
-set.seed(1234)
-sce_subset <- runPCA(sce_subset, ncomponents=25, subset_row=hvg, 
-                     name = "osca_PCA")
-
-
-# Show the names of the elements in the ReducedDims slot
-reducedDims(sce_subset)
-```
-<br>
-
-As mentioned, the authors have also provided us with the first 50 PCs used in
-their study within the full `SingleCellExperiment` object. Let's take a look.
-
-```{r, viewPCA, warning=FALSE}
-reducedDim(sce_subset, "PCA")[1:5, 1:5]
-```
-
-# Clustering
-
-At this point, we could take the PCs that were previously computed and do some
-clustering of cells based on expression profiles. More details are provided in
-the OSCA book
-[here](https://bioconductor.org/books/3.14/OSCA.basic/clustering.html). Let's do
-some clustering with our subsetted object as an example.
-
-```{r, clustering}
-colLabels(sce_subset) <- clusterCells(sce_subset, use.dimred='osca_PCA',
-                               BLUSPARAM=NNGraphParam(cluster.fun="louvain"))
 ```
 
 
 # Visualization
 
-For this dataset, the authors have already provided us with their exact UMAP and
+For this dataset, the authors have provided us with their exact UMAP and
 tSNE coordinates, as well as their color scheme representing the cell types from
 their paper. This can be accessed in the metadata slot of the
 `SingleCellExperiment` object with the `metadata()` function. To consistently
-recreate their figures, let's plot using their provided coordinates.
+recreate their figures, let's plot using their provided reduced dimensionality
+coordinates.
 
 ```{r, fig.wide=TRUE}
-
-# Generate color map matching cell type to colors in publication
 cell.color <- metadata(sce)$cell_color
 
 gg <- plotUMAP(sce, color_by = "cell_type", text_by = "cell_type") 
@@ -267,17 +161,12 @@ gg + theme(legend.title=element_blank()) +
     scale_color_manual(values=c(cell.color))
 ```
 
-<br>
-
-If you would like to create your own UMAP and tSNE plots, please refer back to
-the [OSCA Bioconductor book](https://bioconductor.org/books/3.15/OSCA.basic/)
-for more details.
 
 # Reference
 
 Ximerakis & Holton et al. (2023) Heterochronic parabiosis reprograms the mouse
 brain transcriptome by shifting aging signatures in multiple cell types.
-\emph{Nat Aging} 3, 327–345. <DOI:https://doi.org/10.1038/s43587-023-00373-6>.
+\emph{Nat Aging} 3, 327–345. doi: [https://doi.org/10.1038/s43587-023-00373-6](https://doi.org/10.1038/s43587-023-00373-6).
 
 # Session Info
 
