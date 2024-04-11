@@ -36,12 +36,9 @@ Imports:
     ExperimentHub
 Suggests: 
     BiocStyle,
-    bluster,
-    ggplot2,
     knitr,
     rmarkdown,
-    scater,
-    scran
+    scater
 VignetteBuilder: 
     knitr
 biocViews: ExperimentData, ExpressionData, SequencingData, RNASeqData,

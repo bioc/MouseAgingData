@@ -24,7 +24,7 @@ output:
       code_folding: show
 date: "`r doc_date()`"
 vignette: >
-    %\VignetteIndexEntry{parabiosis droplet}
+    %\VignetteIndexEntry{Accessing and Visualizing Parabiosis Droplet Data}
     %\VignetteEncoding{UTF-8}
     %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
@@ -55,12 +55,7 @@ BiocManager::install("MouseAgingData")
 Now, load the package and dependencies used in the vignette.
 
 ```{r, message = FALSE}
-library(scran)
 library(scater)
-library(ggplot2)
-library(bluster)
-library(SingleCellExperiment)
-library(ExperimentHub)
 library(MouseAgingData)
 ```
 
